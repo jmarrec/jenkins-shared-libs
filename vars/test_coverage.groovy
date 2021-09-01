@@ -191,7 +191,9 @@ def call() {
       }
     }
 
-
+    stage ("A final stage") {
+      println "Bye!";
+    }
   } // end node desktop-ubuntu-1804
 
   if ((buildResult != "FAILURE") && (buildResult != "ERROR")) {
