@@ -70,7 +70,7 @@ def call() {
       }
     }
 
-    stage("build") {
+    stage("Build") {
       dir(build_dir) {
         try {
           sh("ninja");
@@ -83,95 +83,99 @@ def call() {
       }
     }
 
-    stage("Extract coverage result") {
+    stage("Test") {
+      dir(build_dir) {
 
-      sh("find . -name '*.gcda'");
-
-      try {
-        sh("""
-          Xvfb :99 &
-          export DISPLAY=:99
-          rm -rf ./Testing
-          ctest -j \$(nproc) -T test --no-compress-output --output-on-failure
-          """);
-
-      } catch (Exception e) {
-         // re-run failed tests
-         try {
-            sh("ctest -T test -j \$(nproc) --rerun-failed --no-compress-output --output-on-failure")
-         } catch (Exception err_2) {
-            err_2.printStackTrace();
-            buildResult = "ERROR"; // Fail when retry fails. We mark it as Error to indicate the the job did complete, but exited with a non-zero status
-            description = "${description} - CTest Failures";
-         }
-
-      } finally {
+        sh("find . -name '*.gcda'");
 
         try {
+          sh("""
+            Xvfb :99 &
+            export DISPLAY=:99
+            rm -rf ./Testing
+            ctest -j \$(nproc) -T test --no-compress-output --output-on-failure
+            """);
 
-          archiveArtifacts artifacts: 'Testing/', fingerprint: true
-
-          xunit (
-            testTimeMargin: '15000',
-            thresholdMode: 1,
-            thresholds: [
-              skipped(failureThreshold: '0'),
-              failed(failureThreshold: '0')
-            ],
-          tools: [CTest(
-            pattern: 'Testing/**/*.xml',
-            deleteOutputFiles: true,
-            failIfNotNew: false,
-            skipNoTestFiles: true,
-            stopProcessingIfError: false
-          )])
         } catch (Exception e) {
-          e.printStackTrace();
+           // re-run failed tests
+           try {
+              sh("ctest -T test -j \$(nproc) --rerun-failed --no-compress-output --output-on-failure")
+           } catch (Exception err_2) {
+              err_2.printStackTrace();
+              buildResult = "ERROR"; // Fail when retry fails. We mark it as Error to indicate the the job did complete, but exited with a non-zero status
+              description = "${description} - CTest Failures";
+           }
+
+        } finally {
+
+          try {
+
+            archiveArtifacts artifacts: 'Testing/', fingerprint: true
+
+            xunit (
+              testTimeMargin: '15000',
+              thresholdMode: 1,
+              thresholds: [
+                skipped(failureThreshold: '0'),
+                failed(failureThreshold: '0')
+              ],
+            tools: [CTest(
+              pattern: 'Testing/**/*.xml',
+              deleteOutputFiles: true,
+              failIfNotNew: false,
+              skipNoTestFiles: true,
+              stopProcessingIfError: false
+            )])
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
         }
       }
     }
 
     stage("Extract coverage result") {
-      sh("find . -name '*.gcda'");
+      dir(build_dir) {
+        sh("find . -name '*.gcda'");
 
-      sh("rm -Rf gcov/ && mkdir -p gcov/xml gcov/html gcov/html_details");
-      sh("""#!/bin/bash
-          gcovr -j \$(nproc) --root ${base_dir} --delete \
-          --exclude '.*_GTest\\.cpp' --exclude ".*wrap\\.cxx" --exclude ".*Fixture.*" --exclude ".*_Benchmark\\.cpp" \
-          --exclude '.*\\.cxx' --exclude '.*\\.hxx' \
-          --exclude-unreachable-branches --exclude-throw-branches \
-          --print-summary \
-          --xml gcov/xml/coverage.xml \
-          --html gcov/html/gcov.html \
-          .
-          """);
-      try {
-        def failedCoverage = publishCoverage(
-          globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 0.0]],
-          sourceFileResolver: sourceFiles('STORE_ALL_BUILD'),
-          calculateDiffForChangeRequests: true,
-          failBuildIfCoverageDecreasedInChangeRequest: true,
-          failUnhealthy: true,
-          adapters: [
-            coberturaAdapter(
-              path: '**/gcov/xml/coverage.xml',
-              // thresholds: [[failUnhealthy: true, thresholdTarget: 'Line', unhealthyThreshold: 70.0]]
-            )
-          ],
-        );
+        sh("rm -Rf gcov/ && mkdir -p gcov/xml gcov/html gcov/html_details");
+        sh("""#!/bin/bash
+            gcovr -j \$(nproc) --root ${base_dir} --delete \
+            --exclude '.*_GTest\\.cpp' --exclude ".*wrap\\.cxx" --exclude ".*Fixture.*" --exclude ".*_Benchmark\\.cpp" \
+            --exclude '.*\\.cxx' --exclude '.*\\.hxx' \
+            --exclude-unreachable-branches --exclude-throw-branches \
+            --print-summary \
+            --xml gcov/xml/coverage.xml \
+            --html gcov/html/gcov.html \
+            .
+            """);
+        try {
+          def failedCoverage = publishCoverage(
+            globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 0.0]],
+            sourceFileResolver: sourceFiles('STORE_ALL_BUILD'),
+            calculateDiffForChangeRequests: true,
+            failBuildIfCoverageDecreasedInChangeRequest: true,
+            failUnhealthy: true,
+            adapters: [
+              coberturaAdapter(
+                path: '**/gcov/xml/coverage.xml',
+                // thresholds: [[failUnhealthy: true, thresholdTarget: 'Line', unhealthyThreshold: 70.0]]
+              )
+            ],
+          );
 
-        if (failedCoverage) {
+          if (failedCoverage) {
+            buildResult = "FAILURE";
+            description = "${description} - Coverage Failed";
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
           buildResult = "FAILURE";
           description = "${description} - Coverage Failed";
         }
-      } catch (Exception e) {
-        e.printStackTrace();
-        buildResult = "FAILURE";
-        description = "${description} - Coverage Failed";
-      }
 
-      // There should be none left...
-      sh("find . -name '*.gcda'");
+        // There should be none left...
+        sh("find . -name '*.gcda'");
+      }
     }
 
 
