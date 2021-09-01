@@ -25,35 +25,37 @@ def call() {
 
     stage("Checkout") {
       dir(base_dir) {
-        if (env.CHANGE_ID) {
-          checkout([
-            $class: 'GitSCM',
-            branches:  [[name: "FETCH_HEAD"]],
-            userRemoteConfigs: [
-              [
-                credentialsId: "${githubToken}",
-                name: 'origin',
-                refspec: "+refs/pull/${env.CHANGE_ID}/head:refs/remotes/origin/PR-${env.CHANGE_ID}",
-                url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git'
-              ]
-            ],
-            extensions: [[$class: 'GitSCMChecksExtension', verboseConsoleLog: true]]
-          ]);
-        } else {
-          checkout([
-            $class: 'GitSCM',
-            branches:  [[name: "*/${env.BRANCH_NAME}"]],
-            userRemoteConfigs: [
-              [
-                credentialsId: "${githubToken}",
-                name: 'origin',
-                url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git'
-              ]
-            ],
-            extensions: [[$class: 'GitSCMChecksExtension', verboseConsoleLog: true]]
-          ]);
+        checkout scm;
 
-        }
+        //if (env.CHANGE_ID) {
+          //checkout([
+            //$class: 'GitSCM',
+            //branches:  [[name: "FETCH_HEAD"]],
+            //userRemoteConfigs: [
+              //[
+                //credentialsId: "${githubToken}",
+                //name: 'origin',
+                //refspec: "+refs/pull/${env.CHANGE_ID}/head:refs/remotes/origin/PR-${env.CHANGE_ID}",
+                //url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git'
+              //]
+            //],
+            //extensions: [[$class: 'GitSCMChecksExtension', verboseConsoleLog: true]]
+          //]);
+        //} else {
+          //checkout([
+            //$class: 'GitSCM',
+            //branches:  [[name: "*/${env.BRANCH_NAME}"]],
+            //userRemoteConfigs: [
+              //[
+                //credentialsId: "${githubToken}",
+                //name: 'origin',
+                //url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git'
+              //]
+            //],
+            //extensions: [[$class: 'GitSCMChecksExtension', verboseConsoleLog: true]]
+          //]);
+
+        //}
 
         if (fileExists(build_dir) == "false") {
           sh("mkdir ${build_dir}") ;
