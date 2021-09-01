@@ -88,13 +88,13 @@ def call() {
           Xvfb :99 &
           export DISPLAY=:99
           rm -rf ./Testing
-          ctest -j $(nproc) -T test --no-compress-output --output-on-failure
+          ctest -j \$(nproc) -T test --no-compress-output --output-on-failure
           """);
 
       } catch (Exception e) {
          // re-run failed tests
          try {
-            sh("ctest -T test -j $(nproc) --rerun-failed --no-compress-output --output-on-failure")
+            sh("ctest -T test -j \$(nproc) --rerun-failed --no-compress-output --output-on-failure")
          } catch (Exception err_2) {
             err_2.printStackTrace();
             buildResult = "ERROR"; // Fail when retry fails. We mark it as Error to indicate the the job did complete, but exited with a non-zero status
@@ -132,7 +132,7 @@ def call() {
 
       sh("rm -Rf gcov/ && mkdir -p gcov/xml gcov/html gcov/html_details");
       sh("""#!/bin/bash
-          gcovr -j $(nproc) --root ${base_dir} --delete \
+          gcovr -j \$(nproc) --root ${base_dir} --delete \
           --exclude '.*_GTest\\.cpp' --exclude ".*wrap\\.cxx" --exclude ".*Fixture.*" --exclude ".*_Benchmark\\.cpp" \
           --exclude '.*\\.cxx' --exclude '.*\\.hxx' \
           --exclude-unreachable-branches --exclude-throw-branches \
