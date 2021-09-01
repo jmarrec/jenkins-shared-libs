@@ -7,22 +7,37 @@ def call() {
     String build_dir = "${base_dir}/build-coverage";
 
     stage("Checkout") {
+      dir(base_dir) {
+        if (env.CHANGE_ID) {
+          checkout([
+            $class: 'GitSCM',
+            branches:  [[name: "FETCH_HEAD"]],
+            userRemoteConfigs: [
+              [
+                credentialsId: 'SSH_master_julien_desktop',
+                name: 'origin',
+                refspec: "+refs/pull/${env.CHANGE_ID}/head:refs/remotes/origin/PR-${env.CHANGE_ID}",
+                url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git']
+              ]
+          ]);
+        } else {
+          checkout([
+            $class: 'GitSCM',
+            branches:  [[name: "*/${env.BRANCH_NAME}"]],
+            userRemoteConfigs: [
+              [
+                credentialsId: 'SSH_master_julien_desktop',
+                name: 'origin',
+                url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git']
+              ]
+          ]);
 
-      checkout([
-        $class: 'GitSCM',
-        branches:  [[name: "FETCH_HEAD"]],
-        userRemoteConfigs: [
-          [
-            credentialsId: 'SSH_master_julien_desktop',
-            name: 'origin',
-            refspec: "+refs/pull/${env.CHANGE_ID}/head:refs/remotes/origin/PR-${env.CHANGE_ID}",
-            url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git']
-          ]
-      ])
+        }
 
-      if (fileExists(build_dir) == "false") {
-        sh("mkdir ${build_dir}") ;
-      }
+        if (fileExists(build_dir) == "false") {
+          sh("mkdir ${build_dir}") ;
+        }
+      } // end dir(base_dir)
     } // end stage("checkout")
 
 
