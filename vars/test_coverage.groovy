@@ -9,6 +9,10 @@ def call() {
 
   node("desktop-ubuntu-1804") {
 
+    sh("python --version");
+    sh("conan --version");
+
+
     String base_dir = "/home/julien/Software/Others/Jenkins-Test/agent/TestCpp-GHA-Coverage";
     String build_dir = "${base_dir}/build-coverage";
 
