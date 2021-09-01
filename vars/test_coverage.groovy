@@ -5,7 +5,7 @@ def call() {
   def buildResult = "PENDING";
   String description = "Incremental ubuntu-20.04 Build";
   String context = 'ubuntu-20.04-incremental';
-  String githubToken = 'github-jenkins-token';
+  String githubToken = 'github-app-jmarrec'; // We use the Github App and not some username/password as token, so that Checks API is enabled
 
   node("desktop-ubuntu-1804") {
 
@@ -43,7 +43,7 @@ def call() {
             branches:  [[name: "*/${env.BRANCH_NAME}"]],
             userRemoteConfigs: [
               [
-                credentialsId: 'SSH_master_julien_desktop',
+                credentialsId: "${githubToken}",
                 name: 'origin',
                 url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git']
               ]
