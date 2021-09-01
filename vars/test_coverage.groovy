@@ -16,12 +16,12 @@ def call() {
     String base_dir = "/home/julien/Software/Others/Jenkins-Test/agent/TestCpp-GHA-Coverage";
     String build_dir = "${base_dir}/build-coverage";
 
-    githubNotify(
-      description: "${description}",
-      context: "${context}",
-      status: "${buildResult}",
-      credentialsId: "${githubToken}"
-    );
+    //githubNotify(
+      //description: "${description}",
+      //context: "${context}",
+      //status: "${buildResult}",
+      //credentialsId: "${githubToken}"
+    //);
 
     stage("Checkout") {
       dir(base_dir) {
@@ -89,7 +89,7 @@ def call() {
           buildResult = "FAILURE";
           publishChecks(conclusion: 'FAILURE', name: 'ubuntu-20.04-incremental publishChecks', status: 'COMPLETED', title: 'Build');
 
-          githubNotify(description: "${description} - Build failed",  context: "${context}", status: "${buildResult}" , credentialsId: "${githubToken}");
+          // githubNotify(description: "${description} - Build failed",  context: "${context}", status: "${buildResult}" , credentialsId: "${githubToken}");
           error("build step failed. check logs");
         }
       }
@@ -97,8 +97,6 @@ def call() {
 
     stage("Test") {
       dir(build_dir) {
-        publishChecks(conclusion: 'NONE', name: 'ubuntu-20.04-incremental publishChecks', status: 'IN_PROGRESS', title: 'Test');
-
 
         sh("find . -name '*.gcda'");
 
@@ -109,7 +107,6 @@ def call() {
             rm -rf ./Testing
             ctest -j \$(nproc) -T test --no-compress-output --output-on-failure
             """);
-           publishChecks(conclusion: 'SUCCESS', name: 'ubuntu-20.04-incremental publishChecks', status: 'COMPLETED', title: 'Test');
 
 
         } catch (Exception e) {
@@ -166,7 +163,7 @@ def call() {
             """);
         try {
           def failedCoverage = publishCoverage(
-            globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 0.0]],
+            globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 80.0]],
             sourceFileResolver: sourceFiles('STORE_ALL_BUILD'),
             calculateDiffForChangeRequests: true,
             failBuildIfCoverageDecreasedInChangeRequest: true,
@@ -202,7 +199,7 @@ def call() {
   }
 
   // return status code to GitHub
-  githubNotify(description: "${description}",  context: "${context}", status: "${buildResult}" , credentialsId: "${githubToken}");
+  //githubNotify(description: "${description}",  context: "${context}", status: "${buildResult}" , credentialsId: "${githubToken}");
   currentBuild.result = "${buildResult}";
 
 } // end call()
