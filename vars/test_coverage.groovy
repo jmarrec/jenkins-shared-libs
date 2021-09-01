@@ -13,7 +13,8 @@ def call() {
         branches:  [[name: "FETCH_HEAD"]],
         userRemoteConfigs: [
           [
-            credentialsId: 'jenkins-test-ssh-private-key-github',
+            credentialsId: 'SSH_master_julien_desktop',
+            name: 'origin',
             refspec: "+refs/pull/${env.CHANGE_ID}/head:refs/remotes/origin/PR-${env.CHANGE_ID}",
             url: 'git@github.com:jmarrec/TestCpp-GHA-Coverage.git']
           ]
