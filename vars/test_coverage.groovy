@@ -171,9 +171,9 @@ def call() {
             // Report health as 100% if line coverage > 1st
             // Report health as 0% if line coverage < 2nd
             // Mark build as unstable if line coverage < 3rd
-            methodCoverageTargets: '80, 30, 0',
-            lineCoverageTargets: '70, 30, 0',
-            conditionalCoverageTargets: '40, 0, 0',
+            methodCoverageTargets: '80, 80, 0',
+            lineCoverageTargets: '80, 80, 0',
+            conditionalCoverageTargets: '50, 0, 0',
             // Will automatically tighten the coverage targets from build to build
             autoUpdateHealth: false,
             autoUpdateStability: false,
