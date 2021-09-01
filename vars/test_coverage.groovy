@@ -161,7 +161,7 @@ def call() {
             --html gcov/html/gcov.html \
             .
             """);
-        // try {
+        try {
           def failedCoverage = publishCoverage(
             globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 80.0]],
             sourceFileResolver: sourceFiles('STORE_ALL_BUILD'),
@@ -180,11 +180,11 @@ def call() {
             buildResult = "FAILURE";
             description = "${description} - Coverage Failed";
           }
-        // } catch (Exception e) {
-        //   e.printStackTrace();
-        //   buildResult = "FAILURE";
-        //   description = "${description} - Coverage Failed";
-        // }
+        } catch (Exception e) {
+          e.printStackTrace();
+          buildResult = "FAILURE";
+          description = "${description} - Coverage Failed";
+        }
 
         // There should be none left...
         sh("find . -name '*.gcda'");
