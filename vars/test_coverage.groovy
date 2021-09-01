@@ -78,16 +78,16 @@ def call() {
 
     stage("Build") {
       dir(build_dir) {
-        publishChecks(conclusion: 'NONE', name: 'ubuntu-20.04-incremental', status: 'IN_PROGRESS', title: 'Build');
+        publishChecks(conclusion: 'NONE', name: 'ubuntu-20.04-incremental publishChecks', status: 'IN_PROGRESS', title: 'Build');
 
         try {
           sh("ninja");
-          publishChecks(conclusion: 'SUCCESS', name: 'ubuntu-20.04-incremental', status: 'COMPLETED', title: 'Build');
+          publishChecks(conclusion: 'SUCCESS', name: 'ubuntu-20.04-incremental publishChecks', status: 'COMPLETED', title: 'Build');
 
         } catch (Exception e) {
           e.printStackTrace();
           buildResult = "FAILURE";
-          publishChecks(conclusion: 'FAILURE', name: 'ubuntu-20.04-incremental', status: 'COMPLETED', title: 'Build');
+          publishChecks(conclusion: 'FAILURE', name: 'ubuntu-20.04-incremental publishChecks', status: 'COMPLETED', title: 'Build');
 
           githubNotify(description: "${description} - Build failed",  context: "${context}", status: "${buildResult}" , credentialsId: "${githubToken}");
           error("build step failed. check logs");
@@ -97,7 +97,7 @@ def call() {
 
     stage("Test") {
       dir(build_dir) {
-        publishChecks(conclusion: 'NONE', name: 'ubuntu-20.04-incremental', status: 'IN_PROGRESS', title: 'Test');
+        publishChecks(conclusion: 'NONE', name: 'ubuntu-20.04-incremental publishChecks', status: 'IN_PROGRESS', title: 'Test');
 
 
         sh("find . -name '*.gcda'");
@@ -109,7 +109,7 @@ def call() {
             rm -rf ./Testing
             ctest -j \$(nproc) -T test --no-compress-output --output-on-failure
             """);
-           publishChecks(conclusion: 'SUCCESS', name: 'ubuntu-20.04-incremental', status: 'COMPLETED', title: 'Test');
+           publishChecks(conclusion: 'SUCCESS', name: 'ubuntu-20.04-incremental publishChecks', status: 'COMPLETED', title: 'Test');
 
 
         } catch (Exception e) {
