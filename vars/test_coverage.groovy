@@ -151,8 +151,9 @@ def call() {
         sh("find . -name '*.gcda'");
 
         sh("rm -Rf gcov/ && mkdir -p gcov/xml gcov/html gcov/html_details");
+        // Passing --root ${base_dir} is problematic apparently
         sh("""#!/bin/bash
-            gcovr -j \$(nproc) --root ${base_dir} --delete \
+            gcovr -j \$(nproc) --root ../ --delete \
             --exclude '.*_GTest\\.cpp' --exclude ".*wrap\\.cxx" --exclude ".*Fixture.*" --exclude ".*_Benchmark\\.cpp" \
             --exclude '.*\\.cxx' --exclude '.*\\.hxx' \
             --exclude-unreachable-branches --exclude-throw-branches \
